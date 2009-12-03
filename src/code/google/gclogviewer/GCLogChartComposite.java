@@ -7,7 +7,7 @@
  * 
  * http://code.google.com/p/gclogviewer
  */
-package name.bluedavy.jvm.gc;
+package code.google.gclogviewer;
 
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;

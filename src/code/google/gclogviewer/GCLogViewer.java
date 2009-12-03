@@ -7,13 +7,12 @@
  * 
  * http://code.google.com/p/gclogviewer
  */
-package name.bluedavy.jvm.gc;
+package code.google.gclogviewer;
 
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import name.bluedavy.jvm.gc.GCLogAnalyze.GCLogData;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -44,6 +43,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.jfree.ui.RectangleInsets;
+
+import code.google.gclogviewer.GCLogAnalyze.GCLogData;
 
 /**
  * GCLogViewer,create shell/generate graph/handle ui event
