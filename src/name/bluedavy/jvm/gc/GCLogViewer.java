@@ -514,6 +514,16 @@ public class GCLogViewer {
 							});
 						} 
 						catch (Exception e) {
+							MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
+							messageBox.setText(e.toString());
+							StringBuilder errorString=new StringBuilder("Pls visit GCLogViewer website to feedback this exception,error Details: \r\n");
+							StackTraceElement[] eles=e.getStackTrace();
+							for (int i = eles.length; i > eles.length-5; i--) {
+								errorString.append(eles[i]);
+								errorString.append("\r\n");
+							}
+							messageBox.setMessage(errorString.toString());
+					        messageBox.open();
 							e.printStackTrace();
 						}
 					}
