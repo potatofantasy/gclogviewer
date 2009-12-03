@@ -1,8 +1,11 @@
 /**
- * High-Speed Service Framework (HSF)
+ * GCLogViewer
  * 
- * www.taobao.com
- * 	(C) ÌÔ±¦(ÖÐ¹ú) 2003-2008
+ * A free open source tool to visualize data produced by the Java VM options -Xloggc:<file> or jstat > <file>.
+ * 
+ * Code license:	Apache License 2.0
+ * 
+ * http://code.google.com/p/gclogviewer
  */
 package name.bluedavy.jvm.gc;
 
@@ -15,9 +18,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * ÃèÊö£º
- *
- * @author <a href="mailto:bixuan@taobao.com">bixuan</a>
+ * Analyze gc log to GCLogData
+ * 
+ * TODO: Refator to Strategy pattern,so can be extended to support multi jvm version and other jvm(like ibm)
+ * 
+ * @author <a href="mailto:bluedavy@gmail.com">BlueDavy</a>
  */
 public class GCLogAnalyze {
 
