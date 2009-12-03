@@ -64,21 +64,26 @@ public class GCLogAnalyze {
 				double happenTime=Double.parseDouble(line.substring(0,line.indexOf(":")));
 				if(happenTime>maxGCLogTime)
 					maxGCLogTime=happenTime;
-				String consumeTime=line.substring(line.indexOf("real=")+5,line.length()-" secs]".length());
-				int memoryChangeInfoBegin=0;
-				if(line.indexOf(CMSGC_TYPE)!=-1){
-					memoryChangeInfoBegin=line.indexOf("]")+1;
-					data.setGCType(CMSGC_TYPE+" GC");
+				if(line.indexOf("real=")==-1){
+					System.out.println("ignore full gc info,maybe because it's not complete,line info: "+line);
 				}
 				else{
-					memoryChangeInfoBegin=line.indexOf("]", line.indexOf("]")+1)+1;
-					data.setGCType(PARAGC_TYPE+" GC");
+					String consumeTime=line.substring(line.indexOf("real=")+5,line.length()-" secs]".length());
+					int memoryChangeInfoBegin=0;
+					if(line.indexOf(CMSGC_TYPE)!=-1){
+						memoryChangeInfoBegin=line.indexOf("]")+1;
+						data.setGCType(CMSGC_TYPE+" GC");
+					}
+					else{
+						memoryChangeInfoBegin=line.indexOf("]", line.indexOf("]")+1)+1;
+						data.setGCType(PARAGC_TYPE+" GC");
+					}
+					int memoryChangeInfoEnd=line.indexOf("(", memoryChangeInfoBegin);
+					String memoryChangeInfo=line.substring(memoryChangeInfoBegin,memoryChangeInfoEnd).trim();
+					String[] memoryChangeInfos=memoryChangeInfo.split("->");
+					data.getFullGCConsumeTimes().put(String.valueOf(happenTime), consumeTime);
+					data.getFullGCMemoryChanges().put(String.valueOf(happenTime), memoryChangeInfos);
 				}
-				int memoryChangeInfoEnd=line.indexOf("(", memoryChangeInfoBegin);
-				String memoryChangeInfo=line.substring(memoryChangeInfoBegin,memoryChangeInfoEnd).trim();
-				String[] memoryChangeInfos=memoryChangeInfo.split("->");
-				data.getFullGCConsumeTimes().put(String.valueOf(happenTime), consumeTime);
-				data.getFullGCMemoryChanges().put(String.valueOf(happenTime), memoryChangeInfos);
 			}
 			// Minor GC
 			else if((line.indexOf(MINORGC_KEYWORD1)!=-1 || line.indexOf(MINORGC_KEYWORD2)!=-1)){
