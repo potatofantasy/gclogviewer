@@ -517,16 +517,16 @@ public class GCLogViewer {
 						catch (final Exception e) {
 							Display.getDefault().asyncExec(new Runnable(){
 								public void run() {
-								MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
-								messageBox.setText(e.toString());
-								StringBuilder errorString=new StringBuilder("Pls visit GCLogViewer website to feedback this exception,error Details: \r\n");
-								StackTraceElement[] eles=e.getStackTrace();
-								for (int i = eles.length-1; i > eles.length-5; i--) {
-									errorString.append(eles[i]);
-									errorString.append("\r\n");
-								}
-								messageBox.setMessage(errorString.toString());
-						        messageBox.open();
+									MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
+									messageBox.setText(e.toString());
+									StringBuilder errorString=new StringBuilder("Pls visit GCLogViewer website to feedback this exception,error Details: \r\n");
+									StackTraceElement[] eles=e.getStackTrace();
+									for (int i = eles.length-1; i > eles.length-5; i--) {
+										errorString.append(eles[i]);
+										errorString.append("\r\n");
+									}
+									messageBox.setMessage(errorString.toString());
+							        messageBox.open();
 								}
 							});
 							e.printStackTrace();
