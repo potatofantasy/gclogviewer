@@ -79,10 +79,15 @@ public class GCLogAnalyze {
 						data.setGCType(PARAGC_TYPE+" GC");
 					}
 					int memoryChangeInfoEnd=line.indexOf("(", memoryChangeInfoBegin);
-					String memoryChangeInfo=line.substring(memoryChangeInfoBegin,memoryChangeInfoEnd).trim();
-					String[] memoryChangeInfos=memoryChangeInfo.split("->");
-					data.getFullGCConsumeTimes().put(String.valueOf(happenTime), consumeTime);
-					data.getFullGCMemoryChanges().put(String.valueOf(happenTime), memoryChangeInfos);
+					try{
+						String memoryChangeInfo=line.substring(memoryChangeInfoBegin,memoryChangeInfoEnd).trim();
+						String[] memoryChangeInfos=memoryChangeInfo.split("->");
+						data.getFullGCConsumeTimes().put(String.valueOf(happenTime), consumeTime);
+						data.getFullGCMemoryChanges().put(String.valueOf(happenTime), memoryChangeInfos);
+					}
+					catch(StringIndexOutOfBoundsException e){
+						System.out.println("igore gull gc info,maybe because this line info not correct: "+line);
+					}
 				}
 			}
 			// Minor GC
