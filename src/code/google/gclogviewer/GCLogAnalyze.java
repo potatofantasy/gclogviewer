@@ -107,6 +107,11 @@ public class GCLogAnalyze {
 					data.getMinorGCConsumeTimes().put(String.valueOf(happenTime), consumeTime);
 					data.getMinorGCMemoryChanges().put(String.valueOf(happenTime), memoryChangeInfos);
 				}
+				if(data.getGCType()==null){
+					if(line.indexOf(MINORGC_KEYWORD1)!=-1){
+						data.setGCType(PARAGC_TYPE+" GC");
+					}
+				}
 			}
 			// CMS GC
 			else if(line.indexOf(CMSGC_KEYWORD)!=-1){
@@ -122,10 +127,12 @@ public class GCLogAnalyze {
 			
 			if(line.indexOf(CMSGC_FAIL1)!=-1){
 				cmsGCFail1Count++;
+				data.setGCType(CMSGC_TYPE+" GC");
 			}
 			
 			if(line.indexOf(CMSGC_FAIL2)!=-1){
 				cmsGCFail2Count++;
+				data.setGCType(CMSGC_TYPE+" GC");
 			}
 		}
 		data.setSumAppStoppedTime(sumAppStoppedTime);
@@ -246,7 +253,7 @@ public class GCLogAnalyze {
 		}
 
 		public String getThroughput() {
-			return doubleformat.format(sumAppStoppedTime*100/gcLogTime)+"%";
+			return doubleformat.format(100-sumAppStoppedTime*100/gcLogTime)+"%";
 		}
 		
 		public int getFullGCCount(){
