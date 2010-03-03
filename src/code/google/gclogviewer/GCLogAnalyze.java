@@ -55,8 +55,11 @@ public class GCLogAnalyze {
 	// [GC [<collector>: <starting occupancy1> -> <ending occupancy1>, <pause
 	// time1> secs] <starting occupancy3> -> <ending occupancy3>, <pause time3>
 	// secs]
-	private Pattern mp = Pattern
+	private Pattern memoryPattern = Pattern
 			.compile("\\] ([0-9]*)K->([0-9]*)K\\(([0-9]*)K\\)");
+	
+	private Pattern consumeTimePattern = Pattern
+	.compile("\\] .*, ([0-9]*\\.[0-9]*) secs");
 
 	public GCLogData analysis(String fileName) throws Exception {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -95,7 +98,7 @@ public class GCLogAnalyze {
 					int memoryChangeInfoEnd = line.indexOf("(",
 							memoryChangeInfoBegin);
 					
-					Matcher matcher = mp.matcher(line);
+					Matcher matcher = memoryPattern.matcher(line);
 					if (matcher.find()) {
 						String before = matcher.group(1);
 						String after = matcher.group(2);
@@ -136,21 +139,42 @@ public class GCLogAnalyze {
 							line.indexOf(":")));
 					if (happenTime > maxGCLogTime)
 						maxGCLogTime = happenTime;
-					int memoryChangeInfoBegin = line.indexOf("]") + 1;
-					int memoryChangeInfoEnd = line.indexOf(" secs]",
-							memoryChangeInfoBegin);
-					String memoryChangeInfo = line.substring(
-							memoryChangeInfoBegin, memoryChangeInfoEnd).trim();
-					String consumeTime = (memoryChangeInfo.split(",")[1])
-							.trim();
-					memoryChangeInfo = memoryChangeInfo.split(",")[0];
-					memoryChangeInfo = memoryChangeInfo.substring(0,
-							memoryChangeInfo.indexOf("("));
-					String[] memoryChangeInfos = memoryChangeInfo.split("->");
-					data.getMinorGCConsumeTimes().put(
-							String.valueOf(happenTime), consumeTime);
-					data.getMinorGCMemoryChanges().put(
-							String.valueOf(happenTime), memoryChangeInfos);
+					
+					
+					Matcher matcher = memoryPattern.matcher(line);
+					if(matcher.find()){
+						String before = matcher.group(1);
+						String after = matcher.group(2);
+
+						Matcher consumeTime = consumeTimePattern.matcher(line);
+						if(consumeTime.find()){
+							// 新的解析方法
+							String[] memoryChangeInfos = { before, after };
+							data.getMinorGCConsumeTimes().put(
+									String.valueOf(happenTime), consumeTime.group(1));
+							
+							data.getMinorGCMemoryChanges().put(
+									String.valueOf(happenTime), memoryChangeInfos);	
+						}else{
+							System.out.println("igore minor gc:"+line);
+						}
+					}else{//旧的解析方式
+						int memoryChangeInfoBegin = line.indexOf("]") + 1;
+						int memoryChangeInfoEnd = line.indexOf(" secs]",
+								memoryChangeInfoBegin);
+						String memoryChangeInfo = line.substring(
+								memoryChangeInfoBegin, memoryChangeInfoEnd).trim();
+						String consumeTime = (memoryChangeInfo.split(",")[1])
+								.trim();
+						memoryChangeInfo = memoryChangeInfo.split(",")[0];
+						memoryChangeInfo = memoryChangeInfo.substring(0,
+								memoryChangeInfo.indexOf("("));
+						String[] memoryChangeInfos = memoryChangeInfo.split("->");
+						data.getMinorGCConsumeTimes().put(
+								String.valueOf(happenTime), consumeTime);
+						data.getMinorGCMemoryChanges().put(
+								String.valueOf(happenTime), memoryChangeInfos);	
+					}
 				}
 				if (data.getGCType() == null) {
 					if (line.indexOf(MINORGC_KEYWORD1) != -1) {
@@ -363,7 +387,5 @@ public class GCLogAnalyze {
 		public void setGCType(String gcType) {
 			this.gcType = gcType;
 		}
-
 	}
-
 }
