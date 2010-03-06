@@ -129,7 +129,8 @@ public class CMSGCParser extends GCParser
 
 	    gcstats().concurrentFailedIncrement();
 	    gcstats().addFullGCLog(failedTieme, consumeTimes, beginMemorySize, afterMemorySize);
-
+	    
+	    return true;
 	}
 
 	m = _cms_phase_beg_pattern.matcher(s);
