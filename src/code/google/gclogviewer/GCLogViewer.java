@@ -45,6 +45,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.jfree.ui.RectangleInsets;
 
+import code.google.gclogviewer.action.ExportToPDFAction;
 import code.google.gclogviewer.gui.GCLogChartComposite;
 import code.google.gclogviewer.parser.GCDataStore;
 import code.google.gclogviewer.parser.GCParserDriver;
@@ -70,7 +71,7 @@ public class GCLogViewer
 
     private Shell shell = null;
     private Menu menuBar, fileMenu;
-    private MenuItem fileMenuHeader, fileOpenMenuItem, exitMenuItem;
+    private MenuItem fileMenuHeader, fileOpenMenuItem, exportPDFMenuItem, exitMenuItem;
     private Group summary = null, charGroup = null, minorGCGroup = null, fullGCGroup = null, cmsGCGroup = null;
     private Label runtimedataLabel;
     private Label gctypedataLabel;
@@ -84,12 +85,17 @@ public class GCLogViewer
     private Label fullGCTimesDataLabel;
     private Label fullGCConsumeTimesDataLabel;
     private Label avgFullGCConsumeTimeDataLabel;
-    private ChartComposite minorGCChart = null, fullGCChart = null, cmsGCChart = null;
+    private ChartComposite minorGCChartComposite = null, fullGCChartComposite = null, cmsGCChartComposite = null;
     private Label cmsFail1DataLabel;
     private Label cmsFail2DataLabel;
     private Label cmsFail1Label;
     private Label cmsFail2Label;
     private ProgressBar bar;
+
+    private GCStats gcStats;
+    private JFreeChart fullGCChart;
+    private JFreeChart minorGCChart;
+    private JFreeChart cmsGCChart;
 
     /**
      * @param args
@@ -143,6 +149,10 @@ public class GCLogViewer
 	fileOpenMenuItem = new MenuItem(fileMenu, SWT.PUSH);
 	fileOpenMenuItem.setText("&Open log file...");
 	fileOpenMenuItem.addSelectionListener(new OpenFileListener());
+
+	exportPDFMenuItem = new MenuItem(fileMenu, SWT.PUSH);
+	exportPDFMenuItem.setText("&Export to PDF");
+	exportPDFMenuItem.addSelectionListener(new ExportToPDFListener());
 
 	shell.setMenuBar(menuBar);
 
@@ -486,6 +496,7 @@ public class GCLogViewer
 			    GCParserDriver driver = new GCParserDriver(actions);
 			    driver.parse(new File(fileName));
 			    final GCDataStore gcData = (GCDataStore) driver.gc_stats();
+			    gcStats = gcData;
 
 			    Display.getDefault().asyncExec(new Runnable()
 			    {
@@ -494,7 +505,7 @@ public class GCLogViewer
 				    bar.setSelection(5);
 				}
 			    });
-			    final JFreeChart chart = createMinorGCChart(gcData);
+			    minorGCChart = createMinorGCChart(gcData);
 			    Display.getDefault().asyncExec(new Runnable()
 			    {
 				public void run()
@@ -502,7 +513,7 @@ public class GCLogViewer
 				    bar.setSelection(10);
 				}
 			    });
-			    final JFreeChart chart2 = createFullGCChart(gcData);
+			    fullGCChart = createFullGCChart(gcData);
 			    Display.getDefault().asyncExec(new Runnable()
 			    {
 				public void run()
@@ -511,11 +522,11 @@ public class GCLogViewer
 				}
 			    });
 
-			    final JFreeChart cmsGCThrendChart = createCMSGCChart(gcData);
+			    cmsGCChart = createCMSGCChart(gcData);
 
-			    chart.addProgressListener(new WatchChartProgress());
-			    chart2.addProgressListener(new WatchChartProgress());
-			    cmsGCThrendChart.addProgressListener(new WatchChartProgress());
+			    minorGCChart.addProgressListener(new WatchChartProgress());
+			    fullGCChart.addProgressListener(new WatchChartProgress());
+			    cmsGCChart.addProgressListener(new WatchChartProgress());
 
 			    Display.getDefault().asyncExec(new Runnable()
 			    {
@@ -558,15 +569,15 @@ public class GCLogViewer
 					    cmsGCGroup.setText("CMS GC Trend");
 					    cmsGCGroup.setLayout(new GridLayout());
 					}
-					
-					if (cmsGCChart == null)
+
+					if (cmsGCChartComposite == null)
 					{
-					    cmsGCChart = new GCLogChartComposite(cmsGCGroup, SWT.NONE, cmsGCThrendChart, true);
+					    cmsGCChartComposite = new GCLogChartComposite(cmsGCGroup, SWT.NONE, cmsGCChart, true);
 					    GridData grid = new GridData(GridData.FILL_BOTH);
-					    cmsGCChart.setLayoutData(grid);
+					    cmsGCChartComposite.setLayoutData(grid);
 					} else
 					{
-					    cmsGCChart.setChart(cmsGCThrendChart);
+					    cmsGCChartComposite.setChart(cmsGCChart);
 					}
 
 					((GridData) cmsFail1DataLabel.getLayoutData()).exclude = false;
@@ -591,28 +602,28 @@ public class GCLogViewer
 				    }
 
 				    bar.setSelection(30);
-				    if (fullGCChart == null)
+				    if (fullGCChartComposite == null)
 				    {
-					fullGCChart = new GCLogChartComposite(fullGCGroup, SWT.NONE, chart2, true);
+					fullGCChartComposite = new GCLogChartComposite(fullGCGroup, SWT.NONE, fullGCChart, true);
 					GridData grid = new GridData(GridData.FILL_BOTH);
-					fullGCChart.setLayoutData(grid);
+					fullGCChartComposite.setLayoutData(grid);
 				    } else
 				    {
-					fullGCChart.setChart(chart2);
+					fullGCChartComposite.setChart(fullGCChart);
 				    }
-				    fullGCChart.pack();
+				    fullGCChartComposite.pack();
 				    fullGCGroup.layout();
 
-				    if (minorGCChart == null)
+				    if (minorGCChartComposite == null)
 				    {
-					minorGCChart = new GCLogChartComposite(minorGCGroup, SWT.NONE, chart, true);
+					minorGCChartComposite = new GCLogChartComposite(minorGCGroup, SWT.NONE, minorGCChart, true);
 					GridData grid = new GridData(GridData.FILL_BOTH);
-					minorGCChart.setLayoutData(grid);
+					minorGCChartComposite.setLayoutData(grid);
 				    } else
 				    {
-					minorGCChart.setChart(chart);
+					minorGCChartComposite.setChart(minorGCChart);
 				    }
-				    minorGCChart.pack();
+				    minorGCChartComposite.pack();
 				    minorGCGroup.layout();
 
 				    shell.layout();
@@ -668,4 +679,43 @@ public class GCLogViewer
 	}
     }
 
+    class ExportToPDFListener extends SelectionAdapter
+    {
+	public void widgetSelected(SelectionEvent event)
+	{
+
+	    FileDialog dialog = new FileDialog(shell, SWT.SAVE);
+	    dialog.setFilterNames(new String[]
+	    { "PDF format", "All Files (*.*)" });
+	    dialog.setFilterExtensions(new String[]
+	    { "*.pdf", "*.*" });
+
+	    dialog.setFileName("unname.pdf");
+
+	    final String exportPath = dialog.open();
+	    if ((exportPath != null) && (!"".equals(exportPath)))
+	    {
+		ExportToPDFAction action = new ExportToPDFAction();
+		action.setCmsGCChart(cmsGCChart);
+		action.setFullGCChart(fullGCChart);
+		action.setMinorGCChart(minorGCChart);
+		action.setGcStats(gcStats);
+		action.setExportPath(exportPath);
+
+		try
+		{
+		    action.execute();
+		    
+		    MessageBox messageBox = new MessageBox(shell);
+		    messageBox.setText("Information");
+		    messageBox.setMessage("Export to: "+action.getExportPath());
+		    messageBox.open();
+
+		} catch (Exception e)
+		{
+		    e.printStackTrace();
+		}
+	    }
+	}
+    }
 }
