@@ -89,9 +89,9 @@ public class GCLogViewer {
 		shell.setBackground(new Color(Display.getCurrent(), 255, 255, 255));
 		shell.setMaximized(false);
 		shell.setToolTipText("A free open source tool to visualize data produced by the Java VM options -Xloggc:<file>");
-		shell.setSize(new Point(900, 900));
 		Monitor primary = shell.getDisplay().getPrimaryMonitor ();
 		Rectangle bounds = primary.getBounds ();
+		shell.setSize(new Point(bounds.width-100, bounds.height-100));
 		Rectangle rect = shell.getBounds ();
 		int x = bounds.x + (bounds.width - rect.width) / 2;
 		int y = bounds.y + (bounds.height - rect.height) / 2;
