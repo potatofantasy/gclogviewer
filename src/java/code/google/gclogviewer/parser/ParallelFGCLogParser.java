@@ -1,3 +1,12 @@
+/**
+ * GCLogViewer
+ * 
+ * A free open source tool to visualize data produced by the Java VM options -Xloggc:<file> or jstat > <file>.
+ * 
+ * Code license:	Apache License 2.0
+ * 
+ * http://code.google.com/p/gclogviewer
+ */
 package code.google.gclogviewer.parser;
 
 import java.util.regex.Pattern;
@@ -12,7 +21,7 @@ import code.google.gclogviewer.OneLineGCData;
  * 	2010-11-09T18:45:52.548+0800: 38500.303: [Full GC [PSYoungGen: 42686K->0K(512000K)] [PSOldGen: 958137K->140581K(958464K)] 1000824K->140581K(1470464K) [PSPermGen: 52608K->52608K(131072K)], 0.4473140 secs] [Times: user=0.45 sys=0.00, real=0.44 secs] 
  *  38500.303: [Full GC [PSYoungGen: 42686K->0K(512000K)] [PSOldGen: 958137K->140581K(958464K)] 1000824K->140581K(1470464K) [PSPermGen: 52608K->52608K(131072K)], 0.4473140 secs] [Times: user=0.45 sys=0.00, real=0.44 secs]
  *
- * @author <a href="mailto:bixuan@taobao.com">bixuan</a>
+ * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class ParallelFGCLogParser extends CommonLogParser implements GCLogParser {
 

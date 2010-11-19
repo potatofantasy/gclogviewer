@@ -1,3 +1,12 @@
+/**
+ * GCLogViewer
+ * 
+ * A free open source tool to visualize data produced by the Java VM options -Xloggc:<file> or jstat > <file>.
+ * 
+ * Code license:	Apache License 2.0
+ * 
+ * http://code.google.com/p/gclogviewer
+ */
 package code.google.gclogviewer.parser;
 
 import java.util.regex.Matcher;
@@ -13,7 +22,7 @@ import code.google.gclogviewer.OneLineGCData;
  * 	2010-11-11T13:53:18.634+0800: 75094.860: [GC[YG occupancy: 259902 K (563200 K)]75094.860: [Rescan (parallel) , 0.0586970 secs]75094.919: [weak refs processing, 0.0168870 secs]75094.936: [class unloading, 0.0413000 secs]75094.977: [scrub symbol & string tables, 0.0115240 secs] [1 CMS-remark: 869959K(1060864K)] 1129862K(1624064K), 0.1832670 secs] [Times: user=0.23 sys=0.00, real=0.18 secs]  
  *  75094.860: [GC[YG occupancy: 259902 K (563200 K)]75094.860: [Rescan (parallel) , 0.0586970 secs]75094.919: [weak refs processing, 0.0168870 secs]75094.936: [class unloading, 0.0413000 secs]75094.977: [scrub symbol & string tables, 0.0115240 secs] [1 CMS-remark: 869959K(1060864K)] 1129862K(1624064K), 0.1832670 secs] [Times: user=0.23 sys=0.00, real=0.18 secs]
  *
- * @author <a href="mailto:bixuan@taobao.com">bixuan</a>
+ * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class CMSRemarkFGCLogParser implements GCLogParser {
 

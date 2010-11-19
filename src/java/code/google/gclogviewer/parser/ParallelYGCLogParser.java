@@ -1,8 +1,11 @@
 /**
- * High-Speed Service Framework (HSF)
+ * GCLogViewer
  * 
- * www.taobao.com
- * 	(C) ÌÔ±¦(ÖÐ¹ú) 2003-2008
+ * A free open source tool to visualize data produced by the Java VM options -Xloggc:<file> or jstat > <file>.
+ * 
+ * Code license:	Apache License 2.0
+ * 
+ * http://code.google.com/p/gclogviewer
  */
 package code.google.gclogviewer.parser;
 
@@ -18,7 +21,7 @@ import code.google.gclogviewer.OneLineGCData;
  *   2010-11-09T08:04:37.037+0800: 24.791: [GC [PSYoungGen: 462628K->62805K(512000K)] 462628K->62805K(1470464K), 0.0817750 secs] [Times: user=0.14 sys=0.15, real=0.08 secs]	
  *   24.791: [GC [PSYoungGen: 462628K->62805K(512000K)] 462628K->62805K(1470464K), 0.0817750 secs] [Times: user=0.14 sys=0.15, real=0.08 secs]
  *
- * @author <a href="mailto:bixuan@taobao.com">bixuan</a>
+ * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class ParallelYGCLogParser extends CommonLogParser implements GCLogParser {
 

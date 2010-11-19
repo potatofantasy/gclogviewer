@@ -1,3 +1,12 @@
+/**
+ * GCLogViewer
+ * 
+ * A free open source tool to visualize data produced by the Java VM options -Xloggc:<file> or jstat > <file>.
+ * 
+ * Code license:	Apache License 2.0
+ * 
+ * http://code.google.com/p/gclogviewer
+ */
 package code.google.gclogviewer;
 
 import junit.framework.TestCase;
@@ -9,6 +18,11 @@ import code.google.gclogviewer.parser.ParallelFGCLogParser;
 import code.google.gclogviewer.parser.ParallelYGCLogParser;
 import code.google.gclogviewer.parser.ParnewYGCLogParser;
 
+/**
+ * Test for different parser
+ * 
+ * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
+ */
 public class ParserTest extends TestCase{
 
 	public void testParallelYGCParser() throws Exception {

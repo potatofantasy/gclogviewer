@@ -17,7 +17,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 /**
  * override mouseDown event,disable redraw where mousedown,so performance will be a little well
  * 
- * @author <a href="mailto:bluedavy@gmail.com">BlueDavy</a>
+ * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class GCLogChartComposite extends ChartComposite {
 

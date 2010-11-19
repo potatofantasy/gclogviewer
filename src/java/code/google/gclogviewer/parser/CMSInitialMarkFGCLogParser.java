@@ -1,3 +1,12 @@
+/**
+ * GCLogViewer
+ * 
+ * A free open source tool to visualize data produced by the Java VM options -Xloggc:<file> or jstat > <file>.
+ * 
+ * Code license:	Apache License 2.0
+ * 
+ * http://code.google.com/p/gclogviewer
+ */
 package code.google.gclogviewer.parser;
 
 import java.util.regex.Matcher;
@@ -13,7 +22,7 @@ import code.google.gclogviewer.OneLineGCData;
  * 	2010-11-11T13:53:14.724+0800: 75090.950: [GC [1 CMS-initial-mark: 869925K(1060864K)] 874081K(1624064K), 0.0069590 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]  
  *  75090.950: [GC [1 CMS-initial-mark: 869925K(1060864K)] 874081K(1624064K), 0.0069590 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]
  *
- * @author <a href="mailto:bixuan@taobao.com">bixuan</a>
+ * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class CMSInitialMarkFGCLogParser implements GCLogParser {
 

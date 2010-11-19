@@ -46,7 +46,7 @@ import org.jfree.ui.RectangleInsets;
 /**
  * GCLogViewer,create shell/generate chart graph/handle ui event
  * 
- * @author <a href="mailto:bluedavy@gmail.com">BlueDavy</a>
+ * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class GCLogViewer {
 
