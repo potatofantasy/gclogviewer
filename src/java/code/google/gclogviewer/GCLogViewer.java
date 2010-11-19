@@ -58,7 +58,7 @@ public class GCLogViewer {
 	private Shell shell = null;
 	private Menu menuBar,fileMenu,toolsMenu;
 	private MenuItem fileMenuHeader,toolsMenuItem,fileOpenMenuItem;
-	private MenuItem memoryLeakDetectionMenuItem,gcTuningMenuItem;
+	private MenuItem memoryLeakDetectionMenuItem,gcTuningMenuItem,compareLogMenuItem;
 	private MenuItem exitMenuItem;
 	private Group summary = null,gcTrendGroup = null, memoryTrendGroup=null;
 	private Label runtimedataLabel;
@@ -69,6 +69,7 @@ public class GCLogViewer {
 	private Label cmsgcDataLabel,cmsgctDataLabel,avgCMSGCTDataLabel,avgCMSGCRateDataLabel;
 	private ChartComposite gcTrendChart=null ,memoryTrendChart=null;
 	private ProgressBar bar;
+	private final GCLogAnalyze analyze=new GCLogAnalyze();
 
 	public static void main(String[] args) {
 		Display display = Display.getDefault();
@@ -119,6 +120,9 @@ public class GCLogViewer {
 		toolsMenu = new Menu(shell,SWT.DROP_DOWN);
 		toolsMenuItem.setMenu(toolsMenu);
 		
+		compareLogMenuItem = new MenuItem(toolsMenu, SWT.PUSH);
+		compareLogMenuItem.setText("Compare GC Log");
+		compareLogMenuItem.addSelectionListener(new CompareLogListener());
 		memoryLeakDetectionMenuItem = new MenuItem(toolsMenu,SWT.PUSH);
 		memoryLeakDetectionMenuItem.setText("Memory Leak Detection");
 		gcTuningMenuItem = new MenuItem(toolsMenu, SWT.PUSH);
@@ -283,7 +287,7 @@ public class GCLogViewer {
 	}
 	
 	private JFreeChart createGCTrendChart(GCLogData data) {
-    	XYDataset gcTrendDataset = createGCTrendDataset(data);
+    	XYDataset gcTrendDataset = createGCTrendDataset(data,null);
         JFreeChart chart = ChartFactory.createXYLineChart(
             "GC Trend", 
             "Time(S)", 
@@ -306,8 +310,12 @@ public class GCLogViewer {
         return chart;
     }
     
-    private XYDataset createGCTrendDataset(GCLogData data) {
-    	XYSeries ygcSeries=new XYSeries("YGC");
+    private XYDataset createGCTrendDataset(GCLogData data,XYSeriesCollection dataset) {
+    	String suffix="";
+    	if(dataset!=null){
+    		suffix="-2";
+    	}
+    	XYSeries ygcSeries=new XYSeries("YGC"+suffix);
         Map<String, String> ygcPauseTimes=data.getYGCPauseTimes();
         DecimalFormat timeformat=new DecimalFormat("#0.00");
         DecimalFormat doubleformat=new DecimalFormat("#0.0000");
@@ -316,21 +324,22 @@ public class GCLogViewer {
         	double pauseTime=Double.parseDouble(doubleformat.format(Double.parseDouble(entry.getValue())))*1000;
         	ygcSeries.add(happenTime,pauseTime,true);
 		}
-        XYSeries fgcSeries=new XYSeries("FGC");
+        XYSeries fgcSeries=new XYSeries("FGC"+suffix);
         Map<String, String> fgcPauseTimes=data.getFGCPauseTimes();
         for (Entry<String, String> entry : fgcPauseTimes.entrySet()) {
         	double happenTime=Double.parseDouble(timeformat.format(Double.parseDouble(entry.getKey())));
         	double pauseTime=Double.parseDouble(doubleformat.format(Double.parseDouble(entry.getValue())))*1000;
         	fgcSeries.add(happenTime,pauseTime,true);
 		}
-        XYSeries cmsgcSeries=new XYSeries("CMSGC");
+        XYSeries cmsgcSeries=new XYSeries("CMSGC"+suffix);
         Map<String, String> cmsgcPauseTimes=data.getCMSGCPauseTimes();
         for (Entry<String, String> entry : cmsgcPauseTimes.entrySet()) {
         	double happenTime=Double.parseDouble(timeformat.format(Double.parseDouble(entry.getKey())));
         	double pauseTime=Double.parseDouble(doubleformat.format(Double.parseDouble(entry.getValue())))*1000;
         	cmsgcSeries.add(happenTime,pauseTime,true);
 		}
-        XYSeriesCollection dataset = new XYSeriesCollection();
+        if(dataset==null)
+        	dataset = new XYSeriesCollection();
         if(fgcPauseTimes.size()>0)
         	dataset.addSeries(fgcSeries);
         if(cmsgcPauseTimes.size()>0)
@@ -343,7 +352,7 @@ public class GCLogViewer {
      * create Memory Trend Chart
      */
     private JFreeChart createMemoryTrendChart(GCLogData data) {
-    	XYDataset memoryTrendDataset = createMemoryTrendDataset(data);
+    	XYDataset memoryTrendDataset = createMemoryTrendDataset(data,null);
         JFreeChart chart = ChartFactory.createXYLineChart(
             "Memory Trend", 
             "Time(S)", 
@@ -369,8 +378,12 @@ public class GCLogViewer {
     /**
      * create Memory Trend Dataset
      */
-    private XYDataset createMemoryTrendDataset(GCLogData data) {
-    	XYSeries ygcSeries=new XYSeries("YGC");
+    private XYDataset createMemoryTrendDataset(GCLogData data,XYSeriesCollection dataset) {
+    	String suffix="";
+    	if(dataset!=null){
+    		suffix="-2";
+    	}
+    	XYSeries ygcSeries=new XYSeries("YGC"+suffix);
         Map<String, String[]> ygcMemoryChanges=data.getYGCMemoryChanges();
         DecimalFormat doubleformat=new DecimalFormat("#0.00");
         for (Entry<String, String[]> entry : ygcMemoryChanges.entrySet()) {
@@ -384,7 +397,7 @@ public class GCLogViewer {
         	double pauseTime=Double.parseDouble(doubleformat.format(Double.parseDouble(data.getYGCPauseTimes().get(happenTime))));
         	ygcSeries.add(pauseTime+beginTime,endMemory,true);
 		}
-        XYSeries fgcSeries=new XYSeries("FGC");
+        XYSeries fgcSeries=new XYSeries("FGC"+suffix);
         Map<String, String[]> fgcMemoryChanges=data.getFGCMemoryChanges();
         for (Entry<String, String[]> entry : fgcMemoryChanges.entrySet()) {
         	String beginMemoryInfo=entry.getValue()[0];
@@ -397,7 +410,7 @@ public class GCLogViewer {
         	double pauseTime=Double.parseDouble(doubleformat.format(Double.parseDouble(data.getFGCPauseTimes().get(happenTime))));
         	fgcSeries.add(pauseTime+beginTime,endMemory,true);
 		}
-        XYSeries cmsgcSeries=new XYSeries("CMSGC");
+        XYSeries cmsgcSeries=new XYSeries("CMSGC"+suffix);
         Map<String, String[]> cmsgcMemoryChanges=data.getCMSGCMemoryChanges();
         for (Entry<String, String[]> entry : cmsgcMemoryChanges.entrySet()) {
         	String beginMemoryInfo=entry.getValue()[0];
@@ -410,7 +423,8 @@ public class GCLogViewer {
         	double pauseTime=Double.parseDouble(doubleformat.format(Double.parseDouble(data.getCMSGCPauseTimes().get(happenTime))));
         	cmsgcSeries.add(pauseTime+beginTime,endMemory,true);
 		}
-        XYSeriesCollection dataset = new XYSeriesCollection();
+        if(dataset==null)
+        	dataset = new XYSeriesCollection();
         if(fgcMemoryChanges.size()>0){
         	dataset.addSeries(fgcSeries);
         }
@@ -422,6 +436,64 @@ public class GCLogViewer {
 
     }
 	
+    class CompareLogListener extends SelectionAdapter{
+    	
+    	@Override
+    	public void widgetSelected(SelectionEvent e) {
+    		FileDialog dialog=new FileDialog(shell,SWT.OPEN);
+			dialog.setFilterNames(FILTER_NAMES);
+			dialog.setFilterExtensions(FILTER_EXTS);
+			final String fileName=dialog.open();
+			if((fileName!=null)&&(!"".equals(fileName))){
+				Display.getDefault().syncExec(new Runnable(){
+					public void run() {
+						shell.setText(SHELL_TITLE+": Compare "+shell.getText()+" with "+fileName);
+						((GridData)bar.getLayoutData()).exclude=false;
+						shell.layout();
+					}
+				});
+				
+			}
+			new Thread(new Runnable() {
+				public void run() {
+					try{
+						final GCLogData data=analyze.analysis(fileName);
+						Display.getDefault().syncExec(new Runnable() {
+							public void run() {
+								XYSeriesCollection gcTrendDataset=(XYSeriesCollection) gcTrendChart.getChart().getXYPlot().getDataset();
+								createGCTrendDataset(data, gcTrendDataset);
+						        gcTrendChart.pack();
+								gcTrendGroup.layout();
+								XYSeriesCollection memoryTrendDataset=(XYSeriesCollection) memoryTrendChart.getChart().getXYPlot().getDataset();
+								createMemoryTrendDataset(data, memoryTrendDataset);
+								memoryTrendChart.pack();
+								memoryTrendGroup.layout();
+							}
+						});
+					}
+					catch(final Exception e){
+						Display.getDefault().asyncExec(new Runnable(){
+							public void run() {
+								MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
+								messageBox.setText(e.toString());
+								StringBuilder errorString=new StringBuilder("Pls visit GCLogViewer website to feedback this exception,error Details: \r\n");
+								StackTraceElement[] eles=e.getStackTrace();
+								for (int i = eles.length-1; i > eles.length-5; i--) {
+									errorString.append(eles[i]);
+									errorString.append("\r\n");
+								}
+								messageBox.setMessage(errorString.toString());
+						        messageBox.open();
+							}
+						});
+						e.printStackTrace();
+					}
+				}
+			}).start();
+    	}
+    	
+    }
+    
 	class OpenFileListener extends SelectionAdapter{
 
 		private class WatchChartProgress implements ChartProgressListener {
@@ -455,7 +527,6 @@ public class GCLogViewer {
 				new Thread(new Runnable(){
 
 					public void run() {
-						GCLogAnalyze analyze=new GCLogAnalyze();
 						try {
 							final GCLogData data=analyze.analysis(fileName);
 							Display.getDefault().asyncExec(new Runnable(){

@@ -113,6 +113,8 @@ public class GCLogData{
 	}
 	
 	public String getAvgFGCRate(){
+		if(getFGC()==0)
+			return "0 secs";
 		// last FGC time / FGC
 		double maxFGCHappenTime=0;
 		for (String happenTime : fgcPauseTimes.keySet()) {
@@ -141,6 +143,8 @@ public class GCLogData{
 	}
 	
 	public String getAvgCMSGCRate(){
+		if(getCMSGC()==0)
+			return "0 secs";
 		// last CMSGC time / CMSGC
 		double maxCMSGCHappenTime=0;
 		for (String happenTime : cmsGCPauseTimes.keySet()) {
@@ -166,6 +170,8 @@ public class GCLogData{
 	}
 	
 	public String getAvgYGCRate(){
+		if(getYGC()==0)
+			return "0 secs";
 		// last YGC time / YGC
 		double maxYGCHappenTime=0;
 		for (String happenTime : ygcPauseTimes.keySet()) {
