@@ -23,7 +23,7 @@ import code.google.gclogviewer.OneLineGCData;
  *
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
-public class ParallelFGCLogParser extends CommonLogParser implements GCLogParser {
+public class ParallelFGCLogParser extends CommonFGCLogParser implements GCLogParser {
 
 	private static final Pattern pattern1=Pattern.compile("([0-9-T:]+)..*: ([0-9.]+):.*PSOldGen.*K\\)] ([0-9]+)K->([0-9]+)K\\(.*, ([0-9.]+) secs");
 	private static final Pattern pattern2=Pattern.compile("([0-9.]+):.*PSOldGen.*K\\)] ([0-9]+)K->([0-9]+)K\\(.*, ([0-9.]+) secs");

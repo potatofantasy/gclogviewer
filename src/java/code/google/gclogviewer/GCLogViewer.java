@@ -70,6 +70,7 @@ public class GCLogViewer {
 	private ChartComposite gcTrendChart=null ,memoryTrendChart=null;
 	private ProgressBar bar;
 	private final GCLogAnalyze analyze=new GCLogAnalyze();
+	private GCLogData currentGCLogData=null;
 
 	public static void main(String[] args) {
 		Display display = Display.getDefault();
@@ -126,7 +127,8 @@ public class GCLogViewer {
 		memoryLeakDetectionMenuItem = new MenuItem(toolsMenu,SWT.PUSH);
 		memoryLeakDetectionMenuItem.setText("Memory Leak Detection");
 		gcTuningMenuItem = new MenuItem(toolsMenu, SWT.PUSH);
-		gcTuningMenuItem.setText("GC Tuning");
+		gcTuningMenuItem.setText("Data for GC Tuning");
+		gcTuningMenuItem.addSelectionListener(new DataForGCTuningListener());
 		
 		shell.setMenuBar(menuBar);
 		
@@ -435,11 +437,133 @@ public class GCLogViewer {
         return dataset;
 
     }
+    
+    private JFreeChart createLDSTrendChart(GCLogData data) {
+    	XYDataset ldsTrendDataset = createLDSTrendDataset(data);
+        JFreeChart chart = ChartFactory.createXYLineChart(
+            "Live Data Size Trend", 
+            "Time(S)", 
+            "Size(K)",
+            ldsTrendDataset, 
+            PlotOrientation.VERTICAL,
+            true, 
+            true, 
+            false
+        );
+        chart.setBackgroundPaint( java.awt.Color.white );
+        chart.setBorderVisible( true );
+        chart.setBorderPaint( java.awt.Color.BLACK );
+        XYPlot plot = (XYPlot) chart.getPlot();
+        plot.setBackgroundPaint(java.awt.Color.lightGray);
+        plot.setDomainGridlinePaint(java.awt.Color.white);
+        plot.setRangeGridlinePaint(java.awt.Color.white);
+        plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+        plot.getRangeAxis().setFixedDimension(15.0);
+        return chart;
+    }
+    
+    private XYDataset createLDSTrendDataset(GCLogData data) {
+    	XYSeries ygcSeries=new XYSeries("YGC");
+        Map<String, String> ygcLDS=data.getYGCLDS();
+        DecimalFormat timeformat=new DecimalFormat("#0.00");
+        for (Entry<String, String> entry : ygcLDS.entrySet()) {
+        	double happenTime=Double.parseDouble(timeformat.format(Double.parseDouble(entry.getKey())));
+        	double ldsSize=Double.parseDouble(entry.getValue());
+        	ygcSeries.add(happenTime,ldsSize,true);
+		}
+        XYSeries fgcSeries=new XYSeries("FGC");
+        Map<String, String[]> fgcPauseTimes=data.getFGCMemoryChanges();
+        for (Entry<String, String[]> entry : fgcPauseTimes.entrySet()) {
+        	double happenTime=Double.parseDouble(timeformat.format(Double.parseDouble(entry.getKey())));
+        	double ldsSize=Double.parseDouble(entry.getValue()[1]);
+        	fgcSeries.add(happenTime,ldsSize,true);
+		}
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        if(data.getFGC()>0)
+        	dataset.addSeries(fgcSeries);
+        if(data.getYGC()>0)
+        	dataset.addSeries(ygcSeries);
+        return dataset;
+    }
+    
+    private JFreeChart createPTOSTrendChart(GCLogData data) {
+    	XYDataset ldsTrendDataset = createPTOSTrendDataset(data);
+        JFreeChart chart = ChartFactory.createXYLineChart(
+            "Promotion To Old Size Trend", 
+            "Time(S)", 
+            "Size(K)",
+            ldsTrendDataset, 
+            PlotOrientation.VERTICAL,
+            true, 
+            true, 
+            false
+        );
+        chart.setBackgroundPaint( java.awt.Color.white );
+        chart.setBorderVisible( true );
+        chart.setBorderPaint( java.awt.Color.BLACK );
+        XYPlot plot = (XYPlot) chart.getPlot();
+        plot.setBackgroundPaint(java.awt.Color.lightGray);
+        plot.setDomainGridlinePaint(java.awt.Color.white);
+        plot.setRangeGridlinePaint(java.awt.Color.white);
+        plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+        plot.getRangeAxis().setFixedDimension(15.0);
+        return chart;
+    }
+    
+    private XYDataset createPTOSTrendDataset(GCLogData data) {
+    	XYSeries ygcSeries=new XYSeries("YGC");
+        Map<String, String> ygcPTOS=data.getYGCPTOS();
+        DecimalFormat timeformat=new DecimalFormat("#0.00");
+        for (Entry<String, String> entry : ygcPTOS.entrySet()) {
+        	double happenTime=Double.parseDouble(timeformat.format(Double.parseDouble(entry.getKey())));
+        	double ptosSize=Double.parseDouble(entry.getValue());
+        	ygcSeries.add(happenTime,ptosSize,true);
+		}
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        if(data.getYGC()>0)
+        	dataset.addSeries(ygcSeries);
+        return dataset;
+    }
 	
+    class DataForGCTuningListener extends SelectionAdapter{
+    	
+    	@Override
+    	public void widgetSelected(SelectionEvent e) {
+    		if(currentGCLogData==null)
+    			return;
+    		// change GCTrendChart to LiveDataSizeTrend
+    		final JFreeChart ldsChart=createLDSTrendChart(currentGCLogData);
+    		// change MemoryTrendChart to PromotionToOldSizeTrend
+    		final JFreeChart ptosChart=createPTOSTrendChart(currentGCLogData);
+    		Display.getDefault().syncExec(new Runnable() {
+				public void run() {
+					gcTrendChart.setChart(ldsChart);
+		    		gcTrendChart.pack();
+		    		gcTrendGroup.layout();
+		    		memoryTrendChart.setChart(ptosChart);
+		    		memoryTrendChart.pack();
+		    		memoryTrendGroup.layout();
+				}
+			});
+    	}
+    	
+    }
+    
     class CompareLogListener extends SelectionAdapter{
     	
     	@Override
     	public void widgetSelected(SelectionEvent e) {
+    		if(currentGCLogData==null){
+    			Display.getDefault().asyncExec(new Runnable(){
+					public void run() {
+						MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
+						messageBox.setText("must select one log file first");
+						messageBox.setMessage(messageBox.getText());
+				        messageBox.open();
+					}
+				});
+    			return;
+    		}
     		FileDialog dialog=new FileDialog(shell,SWT.OPEN);
 			dialog.setFilterNames(FILTER_NAMES);
 			dialog.setFilterExtensions(FILTER_EXTS);
@@ -452,44 +576,43 @@ public class GCLogViewer {
 						shell.layout();
 					}
 				});
-				
-			}
-			new Thread(new Runnable() {
-				public void run() {
-					try{
-						final GCLogData data=analyze.analysis(fileName);
-						Display.getDefault().syncExec(new Runnable() {
-							public void run() {
-								XYSeriesCollection gcTrendDataset=(XYSeriesCollection) gcTrendChart.getChart().getXYPlot().getDataset();
-								createGCTrendDataset(data, gcTrendDataset);
-						        gcTrendChart.pack();
-								gcTrendGroup.layout();
-								XYSeriesCollection memoryTrendDataset=(XYSeriesCollection) memoryTrendChart.getChart().getXYPlot().getDataset();
-								createMemoryTrendDataset(data, memoryTrendDataset);
-								memoryTrendChart.pack();
-								memoryTrendGroup.layout();
-							}
-						});
-					}
-					catch(final Exception e){
-						Display.getDefault().asyncExec(new Runnable(){
-							public void run() {
-								MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
-								messageBox.setText(e.toString());
-								StringBuilder errorString=new StringBuilder("Pls visit GCLogViewer website to feedback this exception,error Details: \r\n");
-								StackTraceElement[] eles=e.getStackTrace();
-								for (int i = eles.length-1; i > eles.length-5; i--) {
-									errorString.append(eles[i]);
-									errorString.append("\r\n");
+				new Thread(new Runnable() {
+					public void run() {
+						try{
+							final GCLogData data=analyze.analysis(fileName);
+							Display.getDefault().syncExec(new Runnable() {
+								public void run() {
+									XYSeriesCollection gcTrendDataset=(XYSeriesCollection) gcTrendChart.getChart().getXYPlot().getDataset();
+									createGCTrendDataset(data, gcTrendDataset);
+							        gcTrendChart.pack();
+									gcTrendGroup.layout();
+									XYSeriesCollection memoryTrendDataset=(XYSeriesCollection) memoryTrendChart.getChart().getXYPlot().getDataset();
+									createMemoryTrendDataset(data, memoryTrendDataset);
+									memoryTrendChart.pack();
+									memoryTrendGroup.layout();
 								}
-								messageBox.setMessage(errorString.toString());
-						        messageBox.open();
-							}
-						});
-						e.printStackTrace();
+							});
+						}
+						catch(final Exception e){
+							Display.getDefault().asyncExec(new Runnable(){
+								public void run() {
+									MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
+									messageBox.setText(e.toString());
+									StringBuilder errorString=new StringBuilder("Pls visit GCLogViewer website to feedback this exception,error Details: \r\n");
+									StackTraceElement[] eles=e.getStackTrace();
+									for (int i = eles.length-1; i > eles.length-5; i--) {
+										errorString.append(eles[i]);
+										errorString.append("\r\n");
+									}
+									messageBox.setMessage(errorString.toString());
+							        messageBox.open();
+								}
+							});
+							e.printStackTrace();
+						}
 					}
-				}
-			}).start();
+				}).start();
+			}
     	}
     	
     }
@@ -607,6 +730,7 @@ public class GCLogViewer {
 									memoryTrendGroup.layout();
 								}
 							});
+							currentGCLogData = data;
 						} 
 						catch (final Exception e) {
 							Display.getDefault().asyncExec(new Runnable(){

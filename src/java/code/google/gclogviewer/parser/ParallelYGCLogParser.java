@@ -23,10 +23,10 @@ import code.google.gclogviewer.OneLineGCData;
  *
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
-public class ParallelYGCLogParser extends CommonLogParser implements GCLogParser {
+public class ParallelYGCLogParser extends CommonYGCLogParser implements GCLogParser {
 
-	private static final Pattern pattern1=Pattern.compile("([0-9-T:]+)..*: ([0-9.]+):.*PSYoungGen: ([0-9]+)K->([0-9]+)K\\(.*, ([0-9.]+) secs");
-	private static final Pattern pattern2=Pattern.compile("([0-9.]+):.*PSYoungGen: ([0-9]+)K->([0-9]+)K\\(.*, ([0-9.]+) secs");
+	private static final Pattern pattern1=Pattern.compile("([0-9-T:]+)..*: ([0-9.]+):.*PSYoungGen: ([0-9]+)K->([0-9]+)K\\(.*->([0-9]+)K\\(.*, ([0-9.]+) secs");
+	private static final Pattern pattern2=Pattern.compile("([0-9.]+):.*PSYoungGen: ([0-9]+)K->([0-9]+)K\\(.*->([0-9]+)K\\(.*, ([0-9.]+) secs");
 	
 	public OneLineGCData parse(String lineInfo) throws Exception {
 		return parse(lineInfo, pattern1, pattern2);

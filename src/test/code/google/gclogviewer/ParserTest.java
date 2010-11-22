@@ -34,6 +34,7 @@ public class ParserTest extends TestCase{
 		assertEquals("0.0817750",data.getPauseTime());
 		assertEquals("462628",data.getMemoryChangeInfo()[0]);
 		assertEquals("62805",data.getMemoryChangeInfo()[1]);
+		assertEquals("62805", data.getHeapMemoryAfter());
 		line="24.791: [GC [PSYoungGen: 462628K->62805K(512000K)] 462628K->62805K(1470464K), 0.0817750 secs] [Times: user=0.14 sys=0.15, real=0.08 secs]";
 		data = parser.parse(line);
 		assertNull(data.getOccurDateTime());
@@ -41,6 +42,7 @@ public class ParserTest extends TestCase{
 		assertEquals("0.0817750",data.getPauseTime());
 		assertEquals("462628",data.getMemoryChangeInfo()[0]);
 		assertEquals("62805",data.getMemoryChangeInfo()[1]);
+		assertEquals("62805", data.getHeapMemoryAfter());
 	}
 	
 	public void testParnewYGCParser() throws Exception {
@@ -52,6 +54,7 @@ public class ParserTest extends TestCase{
 		assertEquals("0.0179390",data.getPauseTime());
 		assertEquals("558615",data.getMemoryChangeInfo()[0]);
 		assertEquals("13855",data.getMemoryChangeInfo()[1]);
+		assertEquals("195200", data.getHeapMemoryAfter());
 		line="125.294: [GC 125.294: [ParNew: 558615K->13855K(563200K), 0.0177710 secs] 739960K->195200K(1624064K), 0.0179390 secs] [Times: user=0.05 sys=0.00, real=0.02 secs]";
 		data = parser.parse(line);
 		assertNull(data.getOccurDateTime());
@@ -59,6 +62,7 @@ public class ParserTest extends TestCase{
 		assertEquals("0.0179390",data.getPauseTime());
 		assertEquals("558615",data.getMemoryChangeInfo()[0]);
 		assertEquals("13855",data.getMemoryChangeInfo()[1]);
+		assertEquals("195200", data.getHeapMemoryAfter());
 	}
 	
 	public void testParallelFGCParser() throws Exception {
@@ -66,6 +70,7 @@ public class ParserTest extends TestCase{
 		GCLogParser parser=new ParallelFGCLogParser();
 		OneLineGCData data = parser.parse(line);
 		assertEquals("2010-11-09T18:45:52", data.getOccurDateTime());
+		assertEquals("140581", data.getHeapMemoryAfter());
 		assertEquals("38500.303",data.getOccurTime());
 		assertEquals("0.4473140",data.getPauseTime());
 		assertEquals("1000824",data.getMemoryChangeInfo()[0]);
@@ -73,6 +78,7 @@ public class ParserTest extends TestCase{
 		line="38500.303: [Full GC [PSYoungGen: 42686K->0K(512000K)] [PSOldGen: 958137K->140581K(958464K)] 1000824K->140581K(1470464K) [PSPermGen: 52608K->52608K(131072K)], 0.4473140 secs] [Times: user=0.45 sys=0.00, real=0.44 secs]";
 		data = parser.parse(line);
 		assertNull(data.getOccurDateTime());
+		assertEquals("140581", data.getHeapMemoryAfter());
 		assertEquals("38500.303",data.getOccurTime());
 		assertEquals("0.4473140",data.getPauseTime());
 		assertEquals("1000824",data.getMemoryChangeInfo()[0]);
@@ -84,6 +90,7 @@ public class ParserTest extends TestCase{
 		GCLogParser parser=new ParFGCLogParser();
 		OneLineGCData data = parser.parse(line);
 		assertEquals("2010-11-09T18:45:52", data.getOccurDateTime());
+		assertEquals("140581", data.getHeapMemoryAfter());
 		assertEquals("38500.303",data.getOccurTime());
 		assertEquals("0.4473140",data.getPauseTime());
 		assertEquals("1000824",data.getMemoryChangeInfo()[0]);
@@ -91,6 +98,7 @@ public class ParserTest extends TestCase{
 		line="38500.303: [Full GC [PSYoungGen: 42686K->0K(512000K)] [ParOldGen: 958137K->140581K(958464K)] 1000824K->140581K(1470464K) [PSPermGen: 52608K->52608K(131072K)], 0.4473140 secs] [Times: user=0.45 sys=0.00, real=0.44 secs]";
 		data = parser.parse(line);
 		assertNull(data.getOccurDateTime());
+		assertEquals("140581", data.getHeapMemoryAfter());
 		assertEquals("38500.303",data.getOccurTime());
 		assertEquals("0.4473140",data.getPauseTime());
 		assertEquals("1000824",data.getMemoryChangeInfo()[0]);
@@ -102,6 +110,7 @@ public class ParserTest extends TestCase{
 		GCLogParser parser=new CMSFailedFGCLogParser();
 		OneLineGCData data = parser.parse(line);
 		assertEquals("2010-11-11T16:11:11", data.getOccurDateTime());
+		assertEquals("226725", data.getHeapMemoryAfter());
 		assertEquals("83368.174",data.getOccurTime());
 		assertEquals("1.9682580",data.getPauseTime());
 		assertEquals("1215048",data.getMemoryChangeInfo()[0]);
@@ -113,6 +122,7 @@ public class ParserTest extends TestCase{
 		assertEquals("1.9682580",data.getPauseTime());
 		assertEquals("1215048",data.getMemoryChangeInfo()[0]);
 		assertEquals("226725",data.getMemoryChangeInfo()[1]);
+		assertEquals("226725", data.getHeapMemoryAfter());
 	}
 	
 	public void testCMSInitialMarkFGCParser() throws Exception {

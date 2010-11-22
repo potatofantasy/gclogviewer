@@ -36,6 +36,12 @@ public class GCLogData{
 	// key: time value: String[0]: memoryBefore String[1]: memoryAfter
 	private Map<String, String[]> cmsGCMemoryChanges=new HashMap<String, String[]>();
 	
+	// YGC Live data size
+	private Map<String, String> ygcLDS=new HashMap<String, String>();
+	
+	// YGC Promote to old size
+	private Map<String,String> ygcPTOS=new HashMap<String, String>();
+	
 	private String gcType;
 	
 	private DecimalFormat doubleformat=new DecimalFormat("#0.000");
@@ -193,6 +199,26 @@ public class GCLogData{
 	
 	public void setGCType(String gcType){
 		this.gcType=gcType;
+	}
+	
+	public Map<String, String> getYGCLDS() {
+		return ygcLDS;
+	}
+
+	public Map<String, String> getYGCPTOS() {
+		return ygcPTOS;
+	}
+
+	// caculate ygcLDS and ygcPTOS
+	// YGC LDS: current (ygcHeapMemoryAfter) - previous(ygcHeapMemoryAfter - MemoryAfterGC)
+	// YGC Promote to old size: current (ygcHeapMemoryAfter - MemoryAfterGC) - previous(ygcHeapMemoryAfter - MemoryAfterGC)
+	public void setDataForLDSAndPTOS(String currentYGCHeapMemoryAfter,String currentMemoryAfterGC,
+								     String previousYGCHeapMemoryAfter,String previousMemoryAfterGC,
+								     String happenTime) {
+		String ygcLDSInfo = String.valueOf(Integer.parseInt(currentYGCHeapMemoryAfter) - (Integer.parseInt(previousYGCHeapMemoryAfter)-Integer.parseInt(previousMemoryAfterGC)));
+		String ygcPTOSInfo = String.valueOf((Integer.parseInt(currentYGCHeapMemoryAfter)-Integer.parseInt(currentMemoryAfterGC)) - (Integer.parseInt(previousYGCHeapMemoryAfter)-Integer.parseInt(previousMemoryAfterGC)));
+		ygcLDS.put(happenTime, ygcLDSInfo);
+		ygcPTOS.put(happenTime, ygcPTOSInfo);
 	}
 	
 	private double getGCTDouble(Map<String,String> pauseTimesMap) {

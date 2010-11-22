@@ -26,11 +26,8 @@ public class GCLogAnalyze {
 	private static final List<String> IGNORE_KEYWORDS=new ArrayList<String>();
 	
 	static{
-		IGNORE_KEYWORDS.add("CMS-concurrent-mark");
-		IGNORE_KEYWORDS.add("CMS-concurrent-preclean");
-		IGNORE_KEYWORDS.add("CMS-concurrent-abortable-preclean");
-		IGNORE_KEYWORDS.add("CMS-concurrent-sweep");
-		IGNORE_KEYWORDS.add("CMS-concurrent-reset");
+		// CMS Concurrent Time not need calculate
+		IGNORE_KEYWORDS.add("CMS-concurrent-");
 		IGNORE_KEYWORDS.add("CMS: abort preclean due");
 	}
 	
@@ -40,6 +37,7 @@ public class GCLogAnalyze {
 		GCLogData data=new GCLogData();
 		String runtime=null;
 		boolean needPrint = true;
+		OneLineGCData previousData=null;
 		while((line=reader.readLine())!=null){
 			line=line.trim();
 			GCLogParser parser=getParser(line);
@@ -65,6 +63,16 @@ public class GCLogAnalyze {
 				data.getYGCMemoryChanges().put(runtime, onelineGCData.getMemoryChangeInfo());
 				if(data.getGCType()==null)
 					data.setGCType(parser.getGCDescription());
+				if(previousData==null){
+					data.setDataForLDSAndPTOS(onelineGCData.getHeapMemoryAfter(), onelineGCData.getMemoryChangeInfo()[1], "0", "0",runtime);
+				}
+				else{
+					if(previousData.isYGCData())
+						data.setDataForLDSAndPTOS(onelineGCData.getHeapMemoryAfter(), onelineGCData.getMemoryChangeInfo()[1], previousData.getHeapMemoryAfter(), previousData.getMemoryChangeInfo()[1],runtime);
+					else
+						data.setDataForLDSAndPTOS(onelineGCData.getHeapMemoryAfter(), onelineGCData.getMemoryChangeInfo()[1], previousData.getHeapMemoryAfter(), "0",runtime);
+				}
+				previousData = onelineGCData;
 			}
 			else if(parser.isCMSGC()){
 				data.getCMSGCPauseTimes().put(runtime,onelineGCData.getPauseTime());
@@ -75,6 +83,7 @@ public class GCLogAnalyze {
 				data.getFGCPauseTimes().put(runtime,onelineGCData.getPauseTime());
 				data.getFGCMemoryChanges().put(runtime, onelineGCData.getMemoryChangeInfo());
 				data.setGCType(parser.getGCDescription());
+				previousData = onelineGCData;
 			}
 		}
 		data.setRuntime(runtime);

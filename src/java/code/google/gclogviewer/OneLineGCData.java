@@ -16,9 +16,12 @@ package code.google.gclogviewer;
  */
 public class OneLineGCData {
 
-	// int[0]: memoryBeforeGC int[2]: memoryAfterGC
+	// int[0]: memoryBeforeGC int[1]: memoryAfterGC
 	private String[] memoryChangeInfo=new String[2];
 	
+	// HeapMemoryAfter
+	private String heapMemoryAfter;
+
 	// gc occur time
 	private String occurTime;
 	
@@ -28,6 +31,16 @@ public class OneLineGCData {
 	// gc pause time
 	private String pauseTime;
 	
+	private boolean isYGCData;
+	
+	public boolean isYGCData() {
+		return isYGCData;
+	}
+
+	public void setYGCData(boolean isYGCData) {
+		this.isYGCData = isYGCData;
+	}
+
 	public String getOccurDateTime() {
 		return occurDateTime;
 	}
@@ -58,6 +71,14 @@ public class OneLineGCData {
 
 	public void setPauseTime(String pauseTime) {
 		this.pauseTime = pauseTime;
+	}
+	
+	public String getHeapMemoryAfter() {
+		return heapMemoryAfter;
+	}
+
+	public void setHeapMemoryAfter(String heapMemoryAfter) {
+		this.heapMemoryAfter = heapMemoryAfter;
 	}
 	
 }
