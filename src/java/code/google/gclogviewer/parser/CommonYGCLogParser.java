@@ -17,10 +17,11 @@ import code.google.gclogviewer.OneLineGCData;
 /**
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
-public class CommonLogParser {
+public class CommonYGCLogParser {
 
 	public OneLineGCData parse(String lineInfo,Pattern pattern1,Pattern pattern2) throws Exception {
 		OneLineGCData data=new OneLineGCData();
+		data.setYGCData(true);
 		boolean result=formData(lineInfo, data, pattern1);
 		if(!result){
 			result=formData(lineInfo, data, pattern2);
@@ -36,20 +37,22 @@ public class CommonLogParser {
 		Matcher match = pattern.matcher(lineInfo);
 		String[] memoryChanges=new String[2];
 		if (match.find()) {
-			if(match.groupCount() == 4){
+			if(match.groupCount() == 5){
 				data.setOccurTime(match.group(1));
 				memoryChanges[0]=match.group(2);
 				memoryChanges[1]=match.group(3);
 				data.setMemoryChangeInfo(memoryChanges);
-				data.setPauseTime(match.group(4));
+				data.setHeapMemoryAfter(match.group(4));
+				data.setPauseTime(match.group(5));
 			}
-			else if(match.groupCount() == 5){
+			else if(match.groupCount() == 6){
 				data.setOccurDateTime(match.group(1));
 				data.setOccurTime(match.group(2));
 				memoryChanges[0]=match.group(3);
 				memoryChanges[1]=match.group(4);
 				data.setMemoryChangeInfo(memoryChanges);
-				data.setPauseTime(match.group(5));
+				data.setHeapMemoryAfter(match.group(5));
+				data.setPauseTime(match.group(6));
 			}
 			result=true;
         }
