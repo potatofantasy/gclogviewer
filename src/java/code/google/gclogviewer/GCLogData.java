@@ -204,6 +204,36 @@ public class GCLogData{
 	public Map<String, String> getYGCLDS() {
 		return ygcLDS;
 	}
+	
+	public int getAVGYGCLDS(){
+		if(ygcLDS.size()==0)
+			return 0;
+		int summaryLDS=0;
+		for (String lds : ygcLDS.values()) {
+			summaryLDS += Integer.parseInt(lds);
+		}
+		return summaryLDS/ygcLDS.size();	
+	}
+	
+	public int getAVGFGCLDS(){
+		if(getFGC()==0)
+			return 0;
+		int summaryLDS=0;
+		for (String[] changes : fgcMemoryChanges.values()) {
+			summaryLDS += Integer.parseInt(changes[1]);
+		}
+		return summaryLDS/fgcMemoryChanges.size();
+	}
+	
+	public int getAVGPTOS(){
+		if(ygcPTOS.size()==0)
+			return 0;
+		int summaryPTOS=0;
+		for (String ptos : ygcPTOS.values()) {
+			summaryPTOS += Integer.parseInt(ptos);
+		}
+		return summaryPTOS/ygcPTOS.size();
+	}
 
 	public Map<String, String> getYGCPTOS() {
 		return ygcPTOS;

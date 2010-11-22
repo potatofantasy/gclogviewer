@@ -59,7 +59,7 @@ public class GCLogViewer {
 	private Menu menuBar,fileMenu,toolsMenu;
 	private MenuItem fileMenuHeader,toolsMenuItem,fileOpenMenuItem;
 	private MenuItem memoryLeakDetectionMenuItem,gcTuningMenuItem,compareLogMenuItem;
-	private MenuItem exitMenuItem;
+	private MenuItem exitMenuItem,backToHomeMenuItem;
 	private Group summary = null,gcTrendGroup = null, memoryTrendGroup=null;
 	private Label runtimedataLabel;
 	private Label gctypedataLabel;
@@ -67,10 +67,12 @@ public class GCLogViewer {
 	private Label ygcDataLabel,ygctDataLabel,avgYGCTDataLabel,avgYGCRateDataLabel;
 	private Label fgcDataLabel,fgctDataLabel,avgFGCTDataLabel,avgFGCRateDataLabel;
 	private Label cmsgcDataLabel,cmsgctDataLabel,avgCMSGCTDataLabel,avgCMSGCRateDataLabel;
+	private Label avgYGCLDSDataLabel,avgFGCLDSDataLabel,avgPTOSDataLabel;
 	private ChartComposite gcTrendChart=null ,memoryTrendChart=null;
 	private ProgressBar bar;
 	private final GCLogAnalyze analyze=new GCLogAnalyze();
 	private GCLogData currentGCLogData=null;
+	private String currentGCLogFile=null;
 
 	public static void main(String[] args) {
 		Display display = Display.getDefault();
@@ -107,6 +109,10 @@ public class GCLogViewer {
 		fileMenuHeader.setText("&File");
 		toolsMenuItem = new MenuItem(menuBar,SWT.CASCADE);
 		toolsMenuItem.setText("&Tools");
+		backToHomeMenuItem = new MenuItem(menuBar,SWT.CASCADE);
+		backToHomeMenuItem.setText("Back To Home");
+		backToHomeMenuItem.setEnabled(false);
+		backToHomeMenuItem.addSelectionListener(new BackToHomeListener());
 		exitMenuItem = new MenuItem(menuBar,SWT.CASCADE);
 		exitMenuItem.setText("&Exit");
 		exitMenuItem.addSelectionListener(new ExitListener());
@@ -123,11 +129,15 @@ public class GCLogViewer {
 		
 		compareLogMenuItem = new MenuItem(toolsMenu, SWT.PUSH);
 		compareLogMenuItem.setText("Compare GC Log");
+		compareLogMenuItem.setEnabled(false);
 		compareLogMenuItem.addSelectionListener(new CompareLogListener());
 		memoryLeakDetectionMenuItem = new MenuItem(toolsMenu,SWT.PUSH);
 		memoryLeakDetectionMenuItem.setText("Memory Leak Detection");
+		memoryLeakDetectionMenuItem.setEnabled(false);
+		memoryLeakDetectionMenuItem.addSelectionListener(new MemoryLeakDetectionListener());
 		gcTuningMenuItem = new MenuItem(toolsMenu, SWT.PUSH);
 		gcTuningMenuItem.setText("Data for GC Tuning");
+		gcTuningMenuItem.setEnabled(false);
 		gcTuningMenuItem.addSelectionListener(new DataForGCTuningListener());
 		
 		shell.setMenuBar(menuBar);
@@ -218,6 +228,34 @@ public class GCLogViewer {
 		avgCMSGCRateDataLabel=new Label(summary,SWT.NONE);
 		avgCMSGCRateDataLabel.setText("xxx seconds");
 		avgCMSGCRateDataLabel.setLayoutData(cmsgcInfoGrid);
+		
+		// LDS & PTOS Grid
+		GridData ldsAndPTOSGrid=new GridData(GridData.FILL_BOTH);
+		ldsAndPTOSGrid.exclude=true;
+		final Label avgYGCLDSLabel=new Label(summary,SWT.NONE);
+		avgYGCLDSLabel.setText("AVG YGCLDS: ");
+		avgYGCLDSLabel.setLayoutData(ldsAndPTOSGrid);
+		avgYGCLDSDataLabel=new Label(summary,SWT.NONE);
+		avgYGCLDSDataLabel.setText("xxx(K)");
+		avgYGCLDSDataLabel.setLayoutData(ldsAndPTOSGrid);
+		final Label avgFGCLDSLabel=new Label(summary,SWT.NONE);
+		avgFGCLDSLabel.setText("AVG FGCLDS: ");
+		avgFGCLDSLabel.setLayoutData(ldsAndPTOSGrid);
+		avgFGCLDSDataLabel=new Label(summary,SWT.NONE);
+		avgFGCLDSDataLabel.setText("xxx(K)");
+		avgFGCLDSDataLabel.setLayoutData(ldsAndPTOSGrid);
+		final Label avgPTOSLabel=new Label(summary,SWT.NONE);
+		avgPTOSLabel.setText("AVG PTOS: ");
+		avgPTOSLabel.setLayoutData(ldsAndPTOSGrid);
+		avgPTOSDataLabel=new Label(summary,SWT.NONE);
+		avgPTOSDataLabel.setText("xx%");
+		avgPTOSDataLabel.setLayoutData(ldsAndPTOSGrid);
+		final Label emptyLabel2=new Label(summary,SWT.NONE);
+		emptyLabel2.setText(" ");
+		emptyLabel2.setLayoutData(ldsAndPTOSGrid);
+		final Label emptyDataLabel2=new Label(summary,SWT.NONE);
+		emptyDataLabel2.setText(" ");
+		emptyDataLabel2.setLayoutData(ldsAndPTOSGrid);
 		
 		// FGC Grid
 		GridData fgcInfoGrid=new GridData(GridData.FILL_BOTH);
@@ -525,6 +563,24 @@ public class GCLogViewer {
         return dataset;
     }
 	
+    class MemoryLeakDetectionListener extends SelectionAdapter{
+    	
+    	@Override
+    	public void widgetSelected(SelectionEvent e) {
+    		if(currentGCLogData==null)
+    			return;
+    		Display.getDefault().asyncExec(new Runnable(){
+				public void run() {
+					MessageBox messageBox = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+					messageBox.setText("not realized,u can see if fgc memory changes in growth");
+					messageBox.setMessage(messageBox.getText());
+			        messageBox.open();
+				}
+			}); 
+    	}
+    
+    }
+    
     class DataForGCTuningListener extends SelectionAdapter{
     	
     	@Override
@@ -537,12 +593,45 @@ public class GCLogViewer {
     		final JFreeChart ptosChart=createPTOSTrendChart(currentGCLogData);
     		Display.getDefault().syncExec(new Runnable() {
 				public void run() {
+					shell.setText(SHELL_TITLE+": "+currentGCLogFile+" Data For GC Tuning View");
 					gcTrendChart.setChart(ldsChart);
 		    		gcTrendChart.pack();
 		    		gcTrendGroup.layout();
 		    		memoryTrendChart.setChart(ptosChart);
 		    		memoryTrendChart.pack();
 		    		memoryTrendGroup.layout();
+		    		backToHomeMenuItem.setEnabled(true);
+		    		avgYGCLDSDataLabel.setText(currentGCLogData.getAVGYGCLDS()+"(K)");
+		    		avgFGCLDSDataLabel.setText(currentGCLogData.getAVGFGCLDS()+"(K)");
+		    		avgPTOSDataLabel.setText(currentGCLogData.getAVGPTOS()+"(K)");
+		    		((GridData)avgYGCLDSDataLabel.getLayoutData()).exclude=false;
+		    		summary.layout();
+				}
+			});
+    	}
+    	
+    }
+    
+    class BackToHomeListener extends SelectionAdapter{
+    	
+    	@Override
+    	public void widgetSelected(SelectionEvent e) {
+    		if(currentGCLogData==null)
+    			return;
+    		final JFreeChart gcTrendChartComposite=createGCTrendChart(currentGCLogData);
+    		final JFreeChart memoryTrendChartComposite=createMemoryTrendChart(currentGCLogData);
+    		Display.getDefault().syncExec(new Runnable() {
+				public void run() {
+					shell.setText(SHELL_TITLE+": "+currentGCLogFile+" Main View");
+					gcTrendChart.setChart(gcTrendChartComposite);
+		    		gcTrendChart.pack();
+		    		gcTrendGroup.layout();
+		    		memoryTrendChart.setChart(memoryTrendChartComposite);
+		    		memoryTrendChart.pack();
+		    		memoryTrendGroup.layout();
+		    		backToHomeMenuItem.setEnabled(false);
+		    		((GridData)avgYGCLDSDataLabel.getLayoutData()).exclude=true;
+		    		summary.layout();
 				}
 			});
     	}
@@ -556,7 +645,7 @@ public class GCLogViewer {
     		if(currentGCLogData==null){
     			Display.getDefault().asyncExec(new Runnable(){
 					public void run() {
-						MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
+						MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
 						messageBox.setText("must select one log file first");
 						messageBox.setMessage(messageBox.getText());
 				        messageBox.open();
@@ -571,7 +660,7 @@ public class GCLogViewer {
 			if((fileName!=null)&&(!"".equals(fileName))){
 				Display.getDefault().syncExec(new Runnable(){
 					public void run() {
-						shell.setText(SHELL_TITLE+": Compare "+shell.getText()+" with "+fileName);
+						shell.setText(SHELL_TITLE+": Compare "+ currentGCLogFile +" with "+fileName);
 						((GridData)bar.getLayoutData()).exclude=false;
 						shell.layout();
 					}
@@ -590,6 +679,9 @@ public class GCLogViewer {
 									createMemoryTrendDataset(data, memoryTrendDataset);
 									memoryTrendChart.pack();
 									memoryTrendGroup.layout();
+									backToHomeMenuItem.setEnabled(true);
+									((GridData)avgYGCLDSDataLabel.getLayoutData()).exclude=true;
+									summary.layout();
 								}
 							});
 						}
@@ -642,7 +734,7 @@ public class GCLogViewer {
 			if((fileName!=null)&&(!"".equals(fileName))){
 				Display.getDefault().syncExec(new Runnable(){
 					public void run() {
-						shell.setText(SHELL_TITLE+": "+fileName);
+						shell.setText(SHELL_TITLE+": "+fileName+" Main View");
 						((GridData)bar.getLayoutData()).exclude=false;
 						shell.layout();
 					}
@@ -694,6 +786,10 @@ public class GCLogViewer {
 									avgFGCTDataLabel.setText(data.getAvgFGCT());
 									avgFGCRateDataLabel.setText(data.getAvgFGCRate());
 									bar.setSelection(27);
+									((GridData)avgYGCLDSDataLabel.getLayoutData()).exclude=true;
+									compareLogMenuItem.setEnabled(true);
+									memoryLeakDetectionMenuItem.setEnabled(true);
+									gcTuningMenuItem.setEnabled(true);
 									if(data.getCMSGC()>0){
 										cmsgcDataLabel.setText(String.valueOf(data.getCMSGC()));
 										cmsgctDataLabel.setText(data.getCMSGCT());
@@ -731,6 +827,7 @@ public class GCLogViewer {
 								}
 							});
 							currentGCLogData = data;
+							currentGCLogFile = fileName;
 						} 
 						catch (final Exception e) {
 							Display.getDefault().asyncExec(new Runnable(){
