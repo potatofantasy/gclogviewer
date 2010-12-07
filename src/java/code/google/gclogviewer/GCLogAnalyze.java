@@ -55,8 +55,15 @@ public class GCLogAnalyze {
 			OneLineGCData onelineGCData=parser.parse(line);
 			runtime=onelineGCData.getOccurTime();
 			if(runtime==null){
-				System.err.println("Runtime is null: "+line);
-				continue;
+				// try to read next line
+				String nextLine=reader.readLine();
+				line+=nextLine;
+				onelineGCData=parser.parse(line);
+				runtime=onelineGCData.getOccurTime();
+				if(runtime==null){
+					System.err.println("Runtime is null: "+line);
+					continue;
+				}
 			}
 			if(parser.isYGC()){
 				data.getYGCPauseTimes().put(runtime,onelineGCData.getPauseTime());

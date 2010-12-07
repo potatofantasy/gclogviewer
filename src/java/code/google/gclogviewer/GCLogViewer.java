@@ -58,7 +58,7 @@ public class GCLogViewer {
 	private Shell shell = null;
 	private Menu menuBar,fileMenu,toolsMenu;
 	private MenuItem fileMenuHeader,toolsMenuItem,fileOpenMenuItem;
-	private MenuItem memoryLeakDetectionMenuItem,gcTuningMenuItem,compareLogMenuItem;
+	private MenuItem memoryLeakDetectionMenuItem,gcTuningMenuItem,compareLogMenuItem,exportToPDFMenuItem;
 	private MenuItem exitMenuItem,backToHomeMenuItem;
 	private Group summary = null,gcTrendGroup = null, memoryTrendGroup=null;
 	private Label runtimedataLabel;
@@ -139,6 +139,9 @@ public class GCLogViewer {
 		gcTuningMenuItem.setText("Data for GC Tuning");
 		gcTuningMenuItem.setEnabled(false);
 		gcTuningMenuItem.addSelectionListener(new DataForGCTuningListener());
+		exportToPDFMenuItem = new MenuItem(toolsMenu,SWT.PUSH);
+		exportToPDFMenuItem.setText("Export to PDF");
+		exportToPDFMenuItem.setEnabled(false);
 		
 		shell.setMenuBar(menuBar);
 		
